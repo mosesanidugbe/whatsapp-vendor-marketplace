@@ -39,6 +39,7 @@ export function CustomerCarts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busyItem, setBusyItem] = useState<string | null>(null);
+  const [checkingOut, setCheckingOut] = useState<string | null>(null);
 
   const loadCarts = useCallback(async () => {
     const supabase = createClient();
@@ -77,6 +78,56 @@ export function CustomerCarts() {
       await loadCarts();
     }
     setBusyItem(null);
+  }
+
+  async function checkout(cart: VendorCart) {
+    if (checkingOut) return;
+    setCheckingOut(cart.id);
+    setError("");
+    const supabase = createClient();
+    const { data, error: checkoutError } = await supabase.rpc("checkout_vendor_cart", {
+      p_cart_id: cart.id,
+    });
+
+    if (checkoutError || !data) {
+      setError(checkoutError?.message || "We couldn't prepare your order. Please try again.");
+      console.error("Checkout failed:", checkoutError);
+      setCheckingOut(null);
+      return;
+    }
+
+    const order = data as {
+      order_number: string;
+      store_name: string;
+      whatsapp_number: string;
+      subtotal: number;
+      currency: string;
+      items: { product_name: string; unit_price: number; quantity: number; line_total: number }[];
+    };
+    const phone = order.whatsapp_number.replace(/\\D/g, "");
+    if (!phone) {
+      setError("This vendor hasn't configured a valid WhatsApp number yet. Your order was created; contact the vendor through their store page.");
+      setCheckingOut(null);
+      await loadCarts();
+      return;
+    }
+
+    const lines = order.items.map((item) =>
+      `• ${item.product_name} × ${item.quantity} — ${money(Number(item.line_total), order.currency)}`
+    );
+    const message = [
+      `Hello ${order.store_name}, I'd like to place this order:`,
+      "",
+      ...lines,
+      "",
+      `Order: ${order.order_number}`,
+      `Subtotal: ${money(Number(order.subtotal), order.currency)}`,
+      "",
+      "Please confirm availability and payment/delivery details.",
+    ].join("\\n");
+
+    await loadCarts();
+    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   }
 
   if (loading) return <div className="cart-loading">Loading your saved carts…</div>;
@@ -147,7 +198,18 @@ export function CustomerCarts() {
                   <span>Subtotal</span>
                   <strong>{money(subtotal, currency)}</strong>
                 </div>
-                <p className="cart-checkout-note">Checkout for this vendor will be available in the next step.</p>
+                <div className="vendor-cart-checkout">
+                  <p className="cart-checkout-note">You'll review the order with the vendor on WhatsApp. No payment is taken here.</p>
+                  <button
+                    className="button button-dark"
+                    type="button"
+                    disabled={checkingOut !== null || cart.cart_items.length === 0}
+                    onClick={() => void checkout(cart)}
+                  >
+                    {checkingOut === cart.id ? "Preparing order…" : "Checkout with this vendor"}
+                    <span aria-hidden="true">→</span>
+                  </button>
+                </div>
               </article>
             );
           })}
