@@ -36,7 +36,7 @@ export function AccountHeader({
         type="button"
         aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
         aria-expanded={menuOpen}
-        aria-controls="account-mobile-menu"
+        aria-controls={menuOpen ? "account-mobile-menu" : undefined}
         onClick={() => setMenuOpen((open) => !open)}
       >
         <span />
