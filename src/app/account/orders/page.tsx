@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SignOutButton } from "@/components/sign-out-button";
+import { AccountHeader } from "@/components/account-header";
 
 export const instant = false;
 
@@ -58,13 +58,7 @@ export default async function OrdersPage() {
 
   return (
     <main className="account-page">
-      <header className="account-header">
-        <Link className="brand" href="/"><span className="brand-mark">m</span><span>marketday<span className="brand-period">.</span></span></Link>
-        <div className="header-actions">
-          <Link className="sign-in" href="/account">My account</Link>
-          <SignOutButton className="button button-dark button-small" />
-        </div>
-      </header>
+      <AccountHeader showAccountLink />
 
       <div className="account-content">
         <Link className="orders-back-link" href="/account">← Back to account</Link>
