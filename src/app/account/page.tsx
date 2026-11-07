@@ -3,6 +3,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
 
+// This authenticated page reads request-specific cookies and Supabase data.
+// It must render on request rather than being prerendered at build time.
+export const instant = false;
+
 export default async function AccountPage() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
