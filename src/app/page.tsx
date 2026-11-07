@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { SignOutButton } from "@/components/sign-out-button";
 
 const categoryPresentation: Record<
   string,
@@ -62,7 +63,8 @@ export default function Home() {
 async function HomeContent() {
   const supabase = await createClient();
 
-  const [{ data: categoryRows }, { data: productRows }] = await Promise.all([
+  const [{ data: claimsData }, { data: categoryRows }, { data: productRows }] = await Promise.all([
+    supabase.auth.getClaims(),
     supabase
       .from("categories")
       .select("id, name, slug")
@@ -78,6 +80,12 @@ async function HomeContent() {
       .order("created_at", { ascending: false })
       .limit(8),
   ]);
+
+  const userId = claimsData?.claims?.sub;
+  const { data: profile } = userId
+    ? await supabase.from("profiles").select("role").eq("id", userId).maybeSingle()
+    : { data: null };
+  const isSeller = profile?.role === "seller";
 
   const categories = categoryRows ?? [];
   const products = productRows ?? [];
@@ -103,8 +111,19 @@ async function HomeContent() {
         </nav>
 
         <div className="header-actions">
-          <a className="sign-in" href="/sign-in">Sign in</a>
-          <a className="button button-dark button-small" href="/sign-up?role=seller">Open your store <ArrowIcon /></a>
+          {userId ? (
+            <>
+              <a className="sign-in" href="/account">
+                {isSeller ? "Seller account" : "My account"}
+              </a>
+              <SignOutButton className="button button-dark button-small" />
+            </>
+          ) : (
+            <>
+              <a className="sign-in" href="/sign-in">Sign in</a>
+              <a className="button button-dark button-small" href="/sign-up?role=seller">Open your store <ArrowIcon /></a>
+            </>
+          )}
         </div>
       </header>
 
