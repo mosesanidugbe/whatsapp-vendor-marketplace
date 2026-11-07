@@ -103,8 +103,8 @@ async function HomeContent() {
         </nav>
 
         <div className="header-actions">
-          <a className="sign-in" href="#sellers">Sign in</a>
-          <a className="button button-dark button-small" href="#sellers">Open your store <ArrowIcon /></a>
+          <a className="sign-in" href="/sign-in">Sign in</a>
+          <a className="button button-dark button-small" href="/sign-up?role=seller">Open your store <ArrowIcon /></a>
         </div>
       </header>
 
@@ -254,7 +254,7 @@ async function HomeContent() {
           <h2>You bring the business.<br />We’ll bring the browsers.</h2>
           <p>Turn your WhatsApp hustle into a storefront people can actually discover.</p>
         </div>
-        <a className="button button-light" href="https://wa.me/" target="_blank" rel="noreferrer">
+        <a className="button button-light" href="/sign-up?role=seller">
           Get started as a seller <ArrowIcon />
         </a>
       </section>
