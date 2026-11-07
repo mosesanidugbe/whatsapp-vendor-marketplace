@@ -391,6 +391,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .vendor-cart-footer { display:flex; justify-content:space-between; align-items:center; padding-top:15px; font-size:12px; }
 .vendor-cart-footer strong { font-size:15px; }
 .cart-checkout-note { margin:9px 0 0; color:#999d92; font-size:10px; text-align:right; }
+.vendor-cart-checkout { display:flex; flex-direction:column; align-items:flex-end; gap:12px; margin-top:4px; }
+.vendor-cart-checkout .button { display:inline-flex; align-items:center; gap:10px; }
+.vendor-cart-checkout .cart-checkout-note { text-align:right; }
 .add-to-cart-control { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
 .add-to-cart-button { padding:8px 11px; border:0; border-radius:6px; background:#e7f1c9; color:#4c6124; font-size:10px; font-weight:800; cursor:pointer; }
 .add-to-cart-button:disabled { opacity:.6; cursor:wait; }
