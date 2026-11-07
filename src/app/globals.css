@@ -257,3 +257,52 @@ button, a { -webkit-tap-highlight-color: transparent; }
   font-size: 11px;
   line-height: 1.7;
 }
+
+
+/* Keep the hero search inside the available mobile viewport width. */
+.hero-copy {
+  width: 100%;
+  min-width: 0;
+}
+
+.hero-search {
+  width: 100%;
+  max-width: 455px;
+  min-width: 0;
+}
+
+.hero-search > svg {
+  flex: 0 0 19px;
+}
+
+.hero-search input {
+  flex: 1 1 0%;
+  width: 0;
+  min-width: 0;
+}
+
+.hero-search button {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 620px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-copy {
+    min-width: 0;
+  }
+
+  .hero-search {
+    max-width: 100%;
+    gap: 8px;
+    padding-left: 12px;
+  }
+
+  .hero-search button {
+    gap: 6px;
+    padding: 0 10px;
+    white-space: nowrap;
+  }
+}
