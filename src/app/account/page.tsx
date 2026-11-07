@@ -27,6 +27,7 @@ export default async function AccountPage() {
       <header className="account-header">
         <Link className="brand" href="/"><span className="brand-mark">m</span><span>marketday<span className="brand-period">.</span></span></Link>
         <div className="header-actions">
+          <Link className="sign-in" href="/account/orders">My orders</Link>
           <Link className="sign-in" href="/">Explore marketplace</Link>
           <SignOutButton className="button button-dark button-small" />
         </div>
