@@ -11,7 +11,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"customer" | "seller">("customer");
+  const [role, setRole] = useState<"customer" | "seller">(searchParams.get("role") === "seller" ? "seller" : "customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
