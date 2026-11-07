@@ -58,7 +58,7 @@ export default async function OrdersPage() {
 
   return (
     <main className="account-page">
-      <AccountHeader showAccountLink />
+      <AccountHeader showAccountLink showExploreLink={false} />
 
       <div className="account-content">
         <Link className="orders-back-link" href="/account">← Back to account</Link>
