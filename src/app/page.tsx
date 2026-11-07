@@ -1,45 +1,23 @@
-const categories = [
-  { name: "Phones & gadgets", icon: "📱", tone: "lavender" },
-  { name: "Fashion", icon: "👟", tone: "peach" },
-  { name: "Beauty", icon: "🧴", tone: "rose" },
-  { name: "Home & living", icon: "🪴", tone: "mint" },
-  { name: "Food & treats", icon: "🍪", tone: "butter" },
-  { name: "Art & crafts", icon: "🎨", tone: "sky" },
-];
+import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/server";
 
-const products = [
-  {
-    name: "Everyday wireless headphones",
-    vendor: "SoundHaus Lagos",
-    price: "₦22,500",
-    tag: "Bestseller",
-    icon: "🎧",
-    tone: "product-lilac",
-  },
-  {
-    name: "Minimal leather tote",
-    vendor: "The Sunday Edit",
-    price: "₦18,000",
-    tag: "Handpicked",
-    icon: "👜",
-    tone: "product-sand",
-  },
-  {
-    name: "Glow essentials set",
-    vendor: "Dewdrop Beauty",
-    price: "₦12,000",
-    tag: "Popular",
-    icon: "✨",
-    tone: "product-pink",
-  },
-  {
-    name: "Ceramic desk planter",
-    vendor: "Little Things Studio",
-    price: "₦8,500",
-    tag: "Made local",
-    icon: "🪴",
-    tone: "product-green",
-  },
+const categoryPresentation: Record<
+  string,
+  { icon: string; tone: string }
+> = {
+  "phones-gadgets": { icon: "📱", tone: "lavender" },
+  fashion: { icon: "👟", tone: "peach" },
+  beauty: { icon: "🧴", tone: "rose" },
+  "home-living": { icon: "🪴", tone: "mint" },
+  "food-treats": { icon: "🍪", tone: "butter" },
+  "art-crafts": { icon: "🎨", tone: "sky" },
+};
+
+const productTones = [
+  "product-lilac",
+  "product-sand",
+  "product-pink",
+  "product-green",
 ];
 
 function ArrowIcon() {
@@ -59,7 +37,51 @@ function SearchIcon() {
   );
 }
 
+function formatPrice(price: number, currency: string) {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: currency.trim(),
+    maximumFractionDigits: 2,
+  }).format(price);
+}
+
 export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <main className="homepage-loading" aria-busy="true">
+          <p>Loading Marketday...</p>
+        </main>
+      }
+    >
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+async function HomeContent() {
+  const supabase = await createClient();
+
+  const [{ data: categoryRows }, { data: productRows }] = await Promise.all([
+    supabase
+      .from("categories")
+      .select("id, name, slug")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("products")
+      .select(
+        "id, name, price, currency, image_urls, stock_quantity, stores!inner(name, is_active)",
+      )
+      .eq("is_published", true)
+      .eq("stores.is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(8),
+  ]);
+
+  const categories = categoryRows ?? [];
+  const products = productRows ?? [];
+
   return (
     <main>
       <div className="announcement">
@@ -81,8 +103,8 @@ export default function Home() {
         </nav>
 
         <div className="header-actions">
-          <a className="sign-in" href="#sellers">Sign in</a>
-          <a className="button button-dark button-small" href="#sellers">Open your store <ArrowIcon /></a>
+          <a className="sign-in" href="/sign-in">Sign in</a>
+          <a className="button button-dark button-small" href="/sign-up?role=seller">Open your store <ArrowIcon /></a>
         </div>
       </header>
 
@@ -140,13 +162,22 @@ export default function Home() {
           <a className="text-link" href="#featured">Browse all categories <ArrowIcon /></a>
         </div>
         <div className="category-grid">
-          {categories.map((category) => (
-            <a className="category-card" href="#featured" key={category.name}>
-              <span className={`category-icon ${category.tone}`}>{category.icon}</span>
-              <span>{category.name}</span>
-              <span className="category-arrow">↗</span>
-            </a>
-          ))}
+          {categories.map((category) => {
+            const presentation = categoryPresentation[category.slug] ?? {
+              icon: "🛍️",
+              tone: "lavender",
+            };
+
+            return (
+              <a className="category-card" href="#featured" key={category.id}>
+                <span className={`category-icon ${presentation.tone}`}>
+                  {presentation.icon}
+                </span>
+                <span>{category.name}</span>
+                <span className="category-arrow">↗</span>
+              </a>
+            );
+          })}
         </div>
       </section>
 
@@ -156,29 +187,63 @@ export default function Home() {
             <div>
               <p className="eyebrow">THE GOOD STUFF</p>
               <h2>Finds worth finding.</h2>
-              <p className="section-subtitle">A few lovely things from shops you’ll want to know.</p>
+              <p className="section-subtitle">
+                Fresh finds listed by independent WhatsApp sellers.
+              </p>
             </div>
             <a className="text-link" href="#sellers">Explore all finds <ArrowIcon /></a>
           </div>
-          <div className="product-grid">
-            {products.map((product) => (
-              <article className="product-card" key={product.name}>
-                <div className={`product-art ${product.tone}`}>
-                  <span className="product-tag">{product.tag}</span>
-                  <span className="product-emoji">{product.icon}</span>
-                  <button className="save-product" type="button" aria-label={`Save ${product.name}`}>♡</button>
-                </div>
-                <div className="product-info">
-                  <p className="product-vendor">{product.vendor}</p>
-                  <h3>{product.name}</h3>
-                  <div className="product-bottom">
-                    <strong>{product.price}</strong>
-                    <span className="seller-dot" aria-label="Independent seller">✳</span>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+          {products.length > 0 ? (
+            <div className="product-grid">
+              {products.map((product, index) => {
+                const store = Array.isArray(product.stores)
+                  ? product.stores[0]
+                  : product.stores;
+                const imageUrl = product.image_urls?.[0];
+
+                return (
+                  <article className="product-card" key={product.id}>
+                    <div
+                      className={`product-art ${productTones[index % productTones.length]}`}
+                      style={
+                        imageUrl
+                          ? {
+                              backgroundImage: `url("${imageUrl.replaceAll('"', "%22")}")`,
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                            }
+                          : undefined
+                      }
+                    >
+                      <span className="product-tag">
+                        {product.stock_quantity > 0 ? "In stock" : "Check availability"}
+                      </span>
+                      {!imageUrl && <span className="product-emoji">🛍️</span>}
+                    </div>
+                    <div className="product-info">
+                      <p className="product-vendor">{store?.name ?? "Independent seller"}</p>
+                      <h3>{product.name}</h3>
+                      <div className="product-bottom">
+                        <strong>
+                          {formatPrice(Number(product.price), product.currency)}
+                        </strong>
+                        <span className="seller-dot" aria-label="Independent seller">✳</span>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="marketplace-empty">
+              <span aria-hidden="true">✳</span>
+              <h3>The shelves are getting ready.</h3>
+              <p>
+                There aren’t any published products just yet. Check back soon
+                as our independent sellers set up their stores.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -189,7 +254,7 @@ export default function Home() {
           <h2>You bring the business.<br />We’ll bring the browsers.</h2>
           <p>Turn your WhatsApp hustle into a storefront people can actually discover.</p>
         </div>
-        <a className="button button-light" href="https://wa.me/" target="_blank" rel="noreferrer">
+        <a className="button button-light" href="/sign-up?role=seller">
           Get started as a seller <ArrowIcon />
         </a>
       </section>
