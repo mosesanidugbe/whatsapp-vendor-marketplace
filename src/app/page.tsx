@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 const categoryPresentation: Record<
@@ -44,7 +45,21 @@ function formatPrice(price: number, currency: string) {
   }).format(price);
 }
 
-export default async function Home() {
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <main className="homepage-loading" aria-busy="true">
+          <p>Loading Marketday...</p>
+        </main>
+      }
+    >
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+async function HomeContent() {
   const supabase = await createClient();
 
   const [{ data: categoryRows }, { data: productRows }] = await Promise.all([
