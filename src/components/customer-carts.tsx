@@ -104,7 +104,7 @@ export function CustomerCarts() {
       currency: string;
       items: { product_name: string; unit_price: number; quantity: number; line_total: number }[];
     };
-    const phone = order.whatsapp_number.replace(/\\D/g, "");
+    const phone = order.whatsapp_number.replace(/\D/g, "");
     if (!phone) {
       setError("This vendor hasn't configured a valid WhatsApp number yet. Your order was created; contact the vendor through their store page.");
       setCheckingOut(null);
@@ -124,7 +124,7 @@ export function CustomerCarts() {
       `Subtotal: ${money(Number(order.subtotal), order.currency)}`,
       "",
       "Please confirm availability and payment/delivery details.",
-    ].join("\\n");
+    ].join("\n");
 
     await loadCarts();
     window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
