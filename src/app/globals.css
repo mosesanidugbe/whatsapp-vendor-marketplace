@@ -441,3 +441,74 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .order-item { font-size:10px; }
   .order-card-footer { align-items:flex-start; flex-direction:column; }
 }
+
+
+/* Account header: keep the brand clear and move navigation into a menu on phones. */
+.account-header { position: relative; z-index: 20; }
+.account-header > .brand { flex: 0 0 auto; white-space: nowrap; }
+.account-header-actions { display: flex; align-items: center; justify-content: flex-end; gap: clamp(14px, 2.2vw, 28px); }
+.account-header-actions .sign-in { white-space: nowrap; }
+.account-menu-toggle,
+.account-mobile-menu { display: none; }
+.account-menu-toggle:focus-visible,
+.account-mobile-menu a:focus-visible,
+.account-mobile-signout:focus-visible { outline: 3px solid #9bb94d; outline-offset: 3px; }
+
+@media (max-width: 700px) {
+  .account-header {
+    height: 68px;
+    padding: 0 18px;
+  }
+  .account-header-actions { display: none; }
+  .account-menu-toggle {
+    width: 44px;
+    height: 44px;
+    padding: 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fffefa;
+    cursor: pointer;
+  }
+  .account-menu-toggle span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--ink);
+  }
+  .account-mobile-menu {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 0;
+    right: 0;
+    padding: 10px 18px 16px;
+    display: grid;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+    background: #fffefa;
+    box-shadow: 0 14px 24px #303a1b12;
+  }
+  .account-mobile-menu a,
+  .account-mobile-signout {
+    min-height: 46px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  .account-mobile-menu a:hover,
+  .account-mobile-signout:hover { background: #f3f4ed; }
+  .account-mobile-signout { width: 100%; color: #9d5146; }
+}
