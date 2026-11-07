@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SignOutButton } from "@/components/sign-out-button";
+import { AccountHeader } from "@/components/account-header";
 import { CustomerCarts } from "@/components/customer-carts";
 
 // This authenticated page reads request-specific cookies and Supabase data.
@@ -24,14 +24,7 @@ export default async function AccountPage() {
 
   return (
     <main className="account-page">
-      <header className="account-header">
-        <Link className="brand" href="/"><span className="brand-mark">m</span><span>marketday<span className="brand-period">.</span></span></Link>
-        <div className="header-actions">
-          {!isSeller && <Link className="sign-in" href="/account/orders">My orders</Link>}
-          <Link className="sign-in" href="/">Explore marketplace</Link>
-          <SignOutButton className="button button-dark button-small" />
-        </div>
-      </header>
+      <AccountHeader showOrdersLink={!isSeller} />
       <div className="account-content">
         <section className="account-welcome">
           <p className="eyebrow">YOUR MARKETDAY ACCOUNT</p>
