@@ -31,7 +31,7 @@ export function AddToCartButton({
         return;
       }
 
-      let { data: cart, error: cartError } = await supabase
+      const { data: initialCart, error: cartError } = await supabase
         .from("carts")
         .select("id")
         .eq("customer_id", user.id)
@@ -40,6 +40,7 @@ export function AddToCartButton({
         .maybeSingle();
 
       if (cartError) throw cartError;
+      let cart = initialCart;
 
       if (!cart) {
         const created = await supabase
