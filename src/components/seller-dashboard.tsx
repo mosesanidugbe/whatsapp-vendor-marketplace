@@ -82,7 +82,7 @@ export function SellerDashboard({ userId, initialStore, initialProducts, categor
     let uploaded: { path: string; url: string } | null = null;
     try {
       const supabase = createClient();
-      const payload = { name: storeName.trim(), slug: slugify(storeSlug || storeName), description: description.trim() || null, whatsapp_number: whatsapp.replace(/[\\s()-]/g, "") };
+      const payload = { name: storeName.trim(), slug: slugify(storeSlug || storeName), description: description.trim() || null, whatsapp_number: whatsapp.replace(/[\s()-]/g, "") };
       const result = store
         ? await supabase.from("stores").update(payload).eq("id", store.id).select("id,name,slug,description,whatsapp_number,logo_url").single()
         : await supabase.from("stores").insert({ ...payload, owner_id: userId }).select("id,name,slug,description,whatsapp_number,logo_url").single();
