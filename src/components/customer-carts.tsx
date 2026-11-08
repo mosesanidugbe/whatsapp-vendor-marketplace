@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -60,8 +61,23 @@ export function CustomerCarts() {
   }, []);
 
   useEffect(() => {
-    void loadCarts();
-  }, [loadCarts]);
+    const supabase = createClient();
+    void supabase
+      .from("carts")
+      .select("id, store_id, stores(name), cart_items(id, quantity, products(id, name, price, currency, image_urls))")
+      .eq("status", "active")
+      .order("updated_at", { ascending: false })
+      .then(({ data, error: queryError }) => {
+        if (queryError) {
+          setError("We couldn't load your carts. Please refresh and try again.");
+          console.error("Unable to load carts:", queryError);
+        } else {
+          setCarts((data ?? []) as unknown as VendorCart[]);
+          setError("");
+        }
+        setLoading(false);
+      });
+  }, []);
 
   async function changeQuantity(item: CartItem, nextQuantity: number) {
     setBusyItem(item.id);
@@ -127,7 +143,7 @@ export function CustomerCarts() {
     ].join("\n");
 
     await loadCarts();
-    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.location.assign(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
   }
 
   if (loading) return <div className="cart-loading">Loading your saved carts…</div>;
@@ -150,7 +166,7 @@ export function CustomerCarts() {
           <span aria-hidden="true">🛍️</span>
           <h3>Your carts are waiting to happen.</h3>
           <p>Browse the marketplace and add something you love. Your items will be saved here.</p>
-          <a className="button button-dark" href="/">Explore marketplace <span aria-hidden="true">→</span></a>
+          <Link className="button button-dark" href="/">Explore marketplace <span aria-hidden="true">→</span></Link>
         </div>
       ) : (
         <div className="vendor-cart-list">
@@ -212,7 +228,7 @@ export function CustomerCarts() {
                   <strong>{money(subtotal, currency)}</strong>
                 </div>
                 <div className="vendor-cart-checkout">
-                  <p className="cart-checkout-note">You'll review the order with the vendor on WhatsApp. No payment is taken here.</p>
+                  <p className="cart-checkout-note">You&apos;ll review the order with the vendor on WhatsApp. No payment is taken here.</p>
                   <button
                     className="button button-dark"
                     type="button"
