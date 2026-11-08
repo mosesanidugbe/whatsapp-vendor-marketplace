@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 
 const categoryPresentation: Record<
   string,
@@ -73,7 +74,7 @@ async function HomeContent() {
     supabase
       .from("products")
       .select(
-        "id, name, price, currency, image_urls, stock_quantity, stores!inner(name, is_active)",
+        "id, store_id, name, price, currency, image_urls, stock_quantity, stores!inner(name, is_active)",
       )
       .eq("is_published", true)
       .eq("stores.is_active", true)
@@ -246,7 +247,7 @@ async function HomeContent() {
                         <strong>
                           {formatPrice(Number(product.price), product.currency)}
                         </strong>
-                        <span className="seller-dot" aria-label="Independent seller">✳</span>
+                        <AddToCartButton productId={product.id} storeId={product.store_id} />
                       </div>
                     </div>
                   </article>

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SignOutButton } from "@/components/sign-out-button";
+import { AccountHeader } from "@/components/account-header";
+import { CustomerCarts } from "@/components/customer-carts";
 
 // This authenticated page reads request-specific cookies and Supabase data.
-// It must render on request rather than being prerendered at build time.
 export const instant = false;
 
 export default async function AccountPage() {
@@ -23,22 +23,26 @@ export default async function AccountPage() {
   const isSeller = profile?.role === "seller";
 
   return (
-    <main className="auth-page">
-      <section className="auth-card account-card">
-        <Link className="brand auth-brand" href="/"><span className="brand-mark">m</span><span>marketday<span className="brand-period">.</span></span></Link>
-        <p className="eyebrow">YOUR MARKETDAY ACCOUNT</p>
-        <h1>Welcome{profile?.display_name ? `, ${profile.display_name}` : " back"}.</h1>
-        <p className="auth-description">
-          {isSeller
-            ? "Your seller account is ready. The next step is setting up your shop."
-            : "You’re signed in and ready to explore independent businesses."}
-        </p>
-        {isSeller && <p className="auth-notice">Seller account selected · Store setup is coming next.</p>}
-        <div className="account-actions">
-          <Link className="button button-dark" href="/">Explore marketplace <span aria-hidden="true">→</span></Link>
-          <SignOutButton />
-        </div>
-      </section>
+    <main className="account-page">
+      <AccountHeader showOrdersLink={!isSeller} />
+      <div className="account-content">
+        <section className="account-welcome">
+          <p className="eyebrow">YOUR MARKETDAY ACCOUNT</p>
+          <h1>Welcome{profile?.display_name ? `, ${profile.display_name}` : " back"}.</h1>
+          <p>{isSeller
+            ? "Your seller account is ready. Store management is the next milestone."
+            : "Your finds, all in one place. Pick up where you left off."}</p>
+        </section>
+        {isSeller ? (
+          <div className="seller-account-notice">
+            <strong>Seller account</strong>
+            <p>Your seller dashboard is being built separately. You can still explore the marketplace while we work on it.</p>
+            <Link className="button button-dark" href="/">Explore marketplace <span aria-hidden="true">→</span></Link>
+          </div>
+        ) : (
+          <CustomerCarts />
+        )}
+      </div>
     </main>
   );
 }
