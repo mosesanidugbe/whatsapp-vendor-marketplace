@@ -88,7 +88,7 @@ const sellerB = makeClient();
 const anonymous = makeClient();
 
 const results = [];
-const paths = { a: null, b: null, crossUpload: null, anonymous: null, direct: null };
+const paths = { a: null, aOriginal: null, b: null, crossUpload: null, anonymous: null, direct: null };
 
 async function test(name, fn) {
   try {
@@ -189,6 +189,7 @@ async function main() {
     const { response, payload } = await requestValidatedUpload(sellerA, "products", PNG_A, "image/png");
     assert(response.ok && payload.path, payload.error || "Seller A's validated upload failed.");
     paths.a = payload.path;
+    paths.aOriginal = payload.path;
   });
 
   await test("Seller B can upload a valid PNG through the validation function", async () => {
@@ -197,13 +198,12 @@ async function main() {
     paths.b = payload.path;
   });
 
-  await test("Seller A can update their own image", async () => {
-    const { error } = await sellerA.storage.from(BUCKET).update(paths.a, PNG_A_UPDATED, {
-      contentType: "image/png",
-    });
-    if (error) throw error;
+  await test("Seller A can replace their own image through the validation function", async () => {
+    const { response, payload } = await requestValidatedUpload(sellerA, "products", PNG_A_UPDATED, "image/png");
+    assert(response.ok && payload.path, payload.error || "Seller A's replacement upload failed.");
+    paths.a = payload.path;
     const actual = await downloadBytes(sellerA, paths.a);
-    assert(sameBytes(actual, PNG_A_UPDATED), "Seller A's updated image content did not match.");
+    assert(sameBytes(actual, PNG_A_UPDATED), "Seller A's replacement image content did not match.");
   });
 
   await test("Seller B can list their own product images", async () => {
@@ -280,6 +280,7 @@ Setup error: ${errorMessage(error)}`);
   // Cleanup is performed with each object's owner session, never with a service-role key.
   for (const [client, path] of [
     [sellerA, paths.a],
+    [sellerA, paths.aOriginal],
     [sellerB, paths.b],
     [sellerB, paths.crossUpload],
     [sellerA, paths.anonymous],
