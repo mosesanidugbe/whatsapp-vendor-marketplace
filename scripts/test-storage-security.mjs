@@ -220,10 +220,9 @@ async function main() {
       contentType: "image/png",
       upsert: false,
     });
-    // A rejected request is expected. Some Storage operations may not expose row-policy
-    // failures uniformly, so verify the object was not created from Seller B's session.
+    // Check the owner's view regardless of the request's returned error.
     const { data } = await sellerB.storage.from(BUCKET).download(paths.crossUpload);
-    assert(Boolean(error) || !data, "Cross-seller upload unexpectedly created an object.");
+    assert(!data, `Cross-seller upload unexpectedly created an object (request error: ${errorMessage(error)}).`);
   });
 
   await test("Seller A cannot replace Seller B's image", async () => {
@@ -232,8 +231,8 @@ async function main() {
     });
     const actual = await downloadBytes(sellerB, paths.b);
     assert(
-      Boolean(error) || sameBytes(actual, PNG_B),
-      "Seller A changed the contents of Seller B's object.",
+      sameBytes(actual, PNG_B),
+      `Seller A changed the contents of Seller B's object (request error: ${errorMessage(error)}).`,
     );
   });
 
@@ -241,8 +240,8 @@ async function main() {
     const { error } = await sellerA.storage.from(BUCKET).remove([paths.b]);
     const actual = await downloadBytes(sellerB, paths.b);
     assert(
-      Boolean(error) || sameBytes(actual, PNG_B),
-      "Seller A deleted or changed Seller B's object.",
+      sameBytes(actual, PNG_B),
+      `Seller A deleted or changed Seller B's object (request error: ${errorMessage(error)}).`,
     );
   });
 
@@ -282,7 +281,7 @@ Setup error: ${errorMessage(error)}`);
   for (const [client, path] of [
     [sellerA, paths.a],
     [sellerB, paths.b],
-    [sellerA, paths.crossUpload],
+    [sellerB, paths.crossUpload],
     [sellerA, paths.anonymous],
     [sellerA, paths.direct],
   ]) {
