@@ -103,7 +103,7 @@ export function SellerDashboard({ userId, initialStore, initialProducts, categor
         ? await supabase.from("stores").update(payload).eq("id", store.id).select("id,name,slug,description,whatsapp_number,logo_url").single()
         : await supabase.from("stores").insert({ ...payload, owner_id: userId }).select("id,name,slug,description,whatsapp_number,logo_url").single();
       if (result.error) throw result.error;
-      // The Storage INSERT policy requires an existing seller-owned store.
+      // The Storage INSERT policy requires an existing store owned by this account.
       let savedStore = result.data;
       setStore(savedStore);
       if (logo) {
