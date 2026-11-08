@@ -1,4 +1,5 @@
 name: Storage security integration
+# Retry after repository secrets were configured.
 
 on:
   workflow_dispatch:
