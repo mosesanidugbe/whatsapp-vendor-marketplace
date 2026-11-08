@@ -67,17 +67,13 @@ Before deploying, add the same two public project variables to your hosting prov
 
 ## Supabase Storage security integration tests
 
-The Storage security suite tests the actual `marketplace-images` bucket and its RLS policies using two dedicated seller accounts. It creates uniquely named disposable objects under each seller's own folder and removes them with the authenticated owner session.
+The Storage security suite tests the actual `marketplace-images` bucket and its RLS policies using two authenticated seller accounts. The existing two seller accounts in the **development** Supabase project can be used: each must have a confirmed email, the `seller` role in `public.profiles`, an owned store, and working sign-in credentials. The suite creates uniquely named disposable objects under each seller's own folder and removes them with the authenticated owner session; it does not edit seller profiles, stores, or products.
 
-### One-time test account setup
+Do not use production accounts or accounts whose Storage folders contain important files.
 
-1. In the **development** Supabase project, create two dedicated Auth users and give each the `seller` role in `public.profiles`.
-2. Create one store for each account in `public.stores` with `owner_id` set to that seller's Auth user ID. The Storage INSERT policy requires an existing seller-owned store.
-3. Do not use customer accounts, production accounts, or accounts containing important images.
+### Configure test credentials
 
-### Configure local test credentials
-
-Copy `.env.storage-test.example` to `.env.storage-test` and fill in the development project URL, publishable/anon key, and the two test seller credentials. This file is ignored by Git.
+Copy `.env.storage-test.example` to `.env.storage-test` and fill in the development project URL, publishable/anon key, and both seller login credentials. This file is ignored by Git. Never commit it or paste passwords into chat.
 
 Run:
 
@@ -85,6 +81,6 @@ Run:
 npm run test:storage-security
 ```
 
-The script refuses to run unless the Supabase URL belongs to the expected development project ref. It never uses a service-role key. Do not add test credentials to GitHub or commit the local env file.
+The script refuses to run unless the Supabase URL belongs to the expected development project ref. It never uses a service-role key.
 
-The suite checks owner uploads/updates/listing, cross-seller upload/update/delete isolation, bucket MIME and 5 MiB limits, and public image delivery. A cleanup warning is a failed run requiring manual inspection of the reported disposable path.
+The 13 checks cover anonymous and direct-Storage upload denial, valid uploads by both sellers through the validation function, own-object update/listing, cross-seller upload/update/delete isolation, unsupported MIME types, forged image signatures, the 5 MiB limit, and public image delivery. A cleanup warning is a failed run requiring manual inspection of the reported disposable path.
