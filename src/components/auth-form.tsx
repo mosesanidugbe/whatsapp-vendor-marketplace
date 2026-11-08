@@ -11,7 +11,6 @@ export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"customer" | "seller">(searchParams.get("role") === "seller" ? "seller" : "customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,7 +33,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
-            data: { full_name: fullName.trim(), role },
+            data: { full_name: fullName.trim() },
           },
         });
 
@@ -70,7 +69,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         <h1>{isSignUp ? "Your next chapter starts here." : "Good to see you again."}</h1>
         <p className="auth-description">
           {isSignUp
-            ? "Create an account to discover independent businesses or start selling."
+            ? "Create an account to shop from independent businesses or open your own store whenever you’re ready."
             : "Sign in to continue to your Marketday account."}
         </p>
 

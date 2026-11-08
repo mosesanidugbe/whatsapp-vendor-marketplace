@@ -7,15 +7,18 @@ import { createClient } from "@/lib/supabase/client";
 export function AddToCartButton({
   productId,
   storeId,
+  isOwnStore = false,
 }: {
   productId: string;
   storeId: string;
+  isOwnStore?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
 
   async function addToCart() {
+    if (isOwnStore) return;
     setBusy(true);
     setMessage("");
     const supabase = createClient();
@@ -99,9 +102,10 @@ export function AddToCartButton({
 
   return (
     <div className="add-to-cart-control">
-      <button className="add-to-cart-button" type="button" onClick={addToCart} disabled={busy}>
-        {busy ? "Adding…" : "Add to cart"}
+      <button className="add-to-cart-button" type="button" onClick={addToCart} disabled={busy || isOwnStore} aria-describedby={isOwnStore ? `own-store-${productId}` : undefined}>
+        {isOwnStore ? "Your store" : busy ? "Adding…" : "Add to cart"}
       </button>
+      {isOwnStore && <span className="cart-action-message" id={`own-store-${productId}`} role="note">You can’t purchase products from your own store.</span>}
       {message && <span className="cart-action-message" role="status">{message}</span>}
     </div>
   );
