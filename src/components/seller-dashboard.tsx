@@ -61,12 +61,28 @@ export function SellerDashboard({ userId, initialStore, initialProducts, categor
   }
   async function upload(file: File, folder: "products" | "store") {
     const supabase = createClient();
-    const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
-    const path = `${userId}/${folder}/${crypto.randomUUID()}.${extension}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false });
-    if (error) throw error;
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    return { path, url: data.publicUrl };
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session?.access_token) {
+      throw new Error("Your session has expired. Sign in again before uploading.");
+    }
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/upload-marketplace-image`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
+          "Content-Type": file.type,
+          "x-upload-folder": folder,
+        },
+        body: file,
+      },
+    );
+    const result = await response.json() as { path?: string; url?: string; error?: string };
+    if (!response.ok || !result.path || !result.url) {
+      throw new Error(result.error || "The image could not be uploaded. Please try again.");
+    }
+    return { path: result.path, url: result.url };
   }
   async function removeObject(path: string | null) {
     if (!path) return;
