@@ -45,7 +45,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.credentials.outputs.ready == 'true'
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Run Storage security integration tests
         if: steps.credentials.outputs.ready == 'true'
