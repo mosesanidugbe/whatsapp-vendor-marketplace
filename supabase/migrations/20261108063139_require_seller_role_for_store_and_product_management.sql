@@ -1,3 +1,4 @@
+
 -- Require an authenticated seller account as well as ownership for all
 -- store-management and product-management writes.
 --

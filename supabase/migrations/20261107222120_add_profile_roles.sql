@@ -1,4 +1,3 @@
--- Roles are persisted on profiles; user metadata is only an input at signup.
 alter table public.profiles
   add column role text not null default 'customer'
   check (role in ('customer', 'seller'));
@@ -27,7 +26,6 @@ begin
 end;
 $$;
 
--- A user may edit profile details, but must never promote their own account.
 drop policy if exists "Users can create their own profile" on public.profiles;
 revoke insert, update on public.profiles from authenticated;
 grant update (display_name, phone, avatar_url) on public.profiles to authenticated;

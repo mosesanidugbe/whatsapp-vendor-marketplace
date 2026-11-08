@@ -1,3 +1,4 @@
+
 revoke truncate, references, trigger, maintain
 on all tables in schema public
 from anon, authenticated;

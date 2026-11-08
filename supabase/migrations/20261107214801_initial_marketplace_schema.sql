@@ -1,3 +1,4 @@
+
 -- Core marketplace schema. Auth identities remain in auth.users.
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
@@ -85,6 +86,7 @@ create index orders_customer_id_idx on public.orders (customer_id, created_at de
 create index orders_store_id_idx on public.orders (store_id, created_at desc);
 create index order_items_order_id_idx on public.order_items (order_id);
 
+-- Keep updated_at consistent on mutable records.
 create function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -112,6 +114,7 @@ create trigger orders_set_updated_at
 before update on public.orders
 for each row execute function public.set_updated_at();
 
+-- Create a profile automatically when a Supabase Auth user signs up.
 create function public.handle_new_auth_user()
 returns trigger
 language plpgsql
@@ -132,9 +135,11 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_auth_user();
 
+-- Trigger functions are not intended to be callable as RPC endpoints.
 revoke all on function public.set_updated_at() from public, anon, authenticated;
 revoke all on function public.handle_new_auth_user() from public, anon, authenticated;
 
+-- Enable RLS on every exposed marketplace table.
 alter table public.profiles enable row level security;
 alter table public.stores enable row level security;
 alter table public.categories enable row level security;
@@ -142,6 +147,7 @@ alter table public.products enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 
+-- Least-privilege table grants; RLS further restricts rows.
 grant select, insert, update on public.profiles to authenticated;
 grant select on public.stores, public.categories, public.products to anon, authenticated;
 grant insert, update, delete on public.stores, public.products to authenticated;
@@ -255,5 +261,5 @@ using (
   )
 );
 
--- Order writes are intentionally withheld from browser clients until a
--- server-side checkout flow validates product prices, stock, and quantities.
+-- Order writes are intentionally not granted to browser clients yet.
+-- We'll add a validated server-side checkout flow before enabling order creation.
