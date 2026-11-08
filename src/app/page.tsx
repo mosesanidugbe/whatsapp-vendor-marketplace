@@ -255,7 +255,7 @@ async function HomeContent() {
               <span aria-hidden="true">✳</span>
               <h3>The shelves are getting ready.</h3>
               <p>
-                There aren’t any published products just yet. Check back soon
+                There aren&apos;t any published products just yet. Check back soon
                 as our independent sellers set up their stores.
               </p>
             </div>
