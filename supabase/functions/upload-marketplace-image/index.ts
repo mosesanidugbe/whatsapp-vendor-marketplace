@@ -53,8 +53,12 @@ Deno.serve(async (req: Request) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const publishableKeys = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");
+    const secretKeys = Deno.env.get("SUPABASE_SECRET_KEYS");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")
+      ?? (publishableKeys ? JSON.parse(publishableKeys).default : undefined);
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+      ?? (secretKeys ? JSON.parse(secretKeys).default : undefined);
     if (!supabaseUrl || !anonKey || !serviceRoleKey) {
       return respond({ error: "Image upload is not configured on the server." }, 500);
     }
