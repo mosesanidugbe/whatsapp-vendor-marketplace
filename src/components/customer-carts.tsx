@@ -172,7 +172,20 @@ export function CustomerCarts() {
                 <div className="vendor-cart-items">
                   {cart.cart_items.map((item) => {
                     const product = item.products;
-                    if (!product) return null;
+                    if (!product) {
+                      return (
+                        <div className="vendor-cart-item" key={item.id}>
+                          <div className="cart-item-image"><span aria-hidden="true">⚠️</span></div>
+                          <div className="cart-item-details">
+                            <h4>Product unavailable</h4>
+                            <p>This product is no longer available from this vendor.</p>
+                          </div>
+                          <button className="remove-cart-item" type="button" disabled={busyItem === item.id} onClick={() => void changeQuantity(item, 0)}>
+                            {busyItem === item.id ? "Removing…" : "Remove"}
+                          </button>
+                        </div>
+                      );
+                    }
                     const image = product.image_urls?.[0];
                     return (
                       <div className="vendor-cart-item" key={item.id}>
