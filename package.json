@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:storage-security": "node --env-file=.env.storage-test scripts/test-storage-security.mjs"
   },
   "dependencies": {
     "next": "16.4.5",

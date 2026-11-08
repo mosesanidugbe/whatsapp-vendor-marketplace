@@ -1,0 +1,69 @@
+name: Storage security integration
+# Retry after repository secrets were configured.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - test/storage-security-integration
+
+permissions:
+  contents: read
+
+jobs:
+  storage-security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check whether test credentials are configured
+        id: credentials
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || secrets.SUPABASE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          SELLER_A_EMAIL: ${{ secrets.STORAGE_TEST_SELLER_A_EMAIL }}
+          SELLER_A_PASSWORD: ${{ secrets.STORAGE_TEST_SELLER_A_PASSWORD }}
+          SELLER_B_EMAIL: ${{ secrets.STORAGE_TEST_SELLER_B_EMAIL }}
+          SELLER_B_PASSWORD: ${{ secrets.STORAGE_TEST_SELLER_B_PASSWORD }}
+        run: |
+          if [[ -n "$SUPABASE_URL" && -n "$SUPABASE_ANON_KEY" && -n "$SELLER_A_EMAIL" && -n "$SELLER_A_PASSWORD" && -n "$SELLER_B_EMAIL" && -n "$SELLER_B_PASSWORD" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Storage integration tests skipped. Configure the six STORAGE_TEST/SUPABASE repository secrets, then push another commit to this branch."
+          fi
+
+      - name: Check out repository
+        if: steps.credentials.outputs.ready == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        if: steps.credentials.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.credentials.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Run Storage security integration tests
+        if: steps.credentials.outputs.ready == 'true'
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || secrets.SUPABASE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          STORAGE_TEST_SELLER_A_EMAIL: ${{ secrets.STORAGE_TEST_SELLER_A_EMAIL }}
+          STORAGE_TEST_SELLER_A_PASSWORD: ${{ secrets.STORAGE_TEST_SELLER_A_PASSWORD }}
+          STORAGE_TEST_SELLER_B_EMAIL: ${{ secrets.STORAGE_TEST_SELLER_B_EMAIL }}
+          STORAGE_TEST_SELLER_B_PASSWORD: ${{ secrets.STORAGE_TEST_SELLER_B_PASSWORD }}
+        run: |
+          {
+            printf 'SUPABASE_URL=%s\n' "$SUPABASE_URL"
+            printf 'SUPABASE_ANON_KEY=%s\n' "$SUPABASE_ANON_KEY"
+            printf 'STORAGE_TEST_SELLER_A_EMAIL=%s\n' "$STORAGE_TEST_SELLER_A_EMAIL"
+            printf 'STORAGE_TEST_SELLER_A_PASSWORD=%s\n' "$STORAGE_TEST_SELLER_A_PASSWORD"
+            printf 'STORAGE_TEST_SELLER_B_EMAIL=%s\n' "$STORAGE_TEST_SELLER_B_EMAIL"
+            printf 'STORAGE_TEST_SELLER_B_PASSWORD=%s\n' "$STORAGE_TEST_SELLER_B_PASSWORD"
+          } > .env.storage-test
+          npm run test:storage-security
