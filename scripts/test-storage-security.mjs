@@ -108,7 +108,7 @@ async function downloadBytes(client, path) {
 async function requestValidatedUpload(client, folder, bytes, contentType) {
   const { data: { session }, error: sessionError } = await client.auth.getSession();
   if (sessionError || !session?.access_token) throw new Error("Could not read the authenticated seller session.");
-  const response = await fetch(`${url.replace(/\\/+$/, "")}/functions/v1/upload-marketplace-image`, {
+  const response = await fetch(\`\${url.replace(/\/+$/, "")}/functions/v1/upload-marketplace-image\`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${session.access_token}`,
