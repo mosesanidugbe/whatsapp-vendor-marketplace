@@ -65,7 +65,7 @@ export default async function OrdersPage() {
         <section className="orders-welcome">
           <p className="eyebrow">YOUR MARKETDAY ACCOUNT</p>
           <h1>Your orders.</h1>
-          <p>Keep track of the orders you've started with marketplace vendors.</p>
+          <p>Keep track of the orders you&apos;ve started with marketplace vendors.</p>
         </section>
 
         {error ? (
