@@ -88,7 +88,7 @@ const sellerB = makeClient();
 const anonymous = makeClient();
 
 const results = [];
-const paths = { a: null, b: null, crossUpload: null, invalidMime: null, oversized: null, anonymous: null };
+const paths = { a: null, b: null, crossUpload: null, anonymous: null };
 
 async function test(name, fn) {
   try {
@@ -103,6 +103,23 @@ async function downloadBytes(client, path) {
   const { data, error } = await client.storage.from(BUCKET).download(path);
   if (error) throw error;
   return Buffer.from(await data.arrayBuffer());
+}
+
+async function requestValidatedUpload(client, folder, bytes, contentType) {
+  const { data: { session }, error: sessionError } = await client.auth.getSession();
+  if (sessionError || !session?.access_token) throw new Error("Could not read the authenticated seller session.");
+  const response = await fetch(`${url.replace(/\\/+$/, "")}/functions/v1/upload-marketplace-image`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      apikey: anonKey,
+      "Content-Type": contentType,
+      "x-upload-folder": folder,
+    },
+    body: bytes,
+  });
+  const payload = await response.json().catch(() => ({}));
+  return { response, payload };
 }
 
 async function assertMissing(client, path, message) {
@@ -144,11 +161,9 @@ async function main() {
   }
 
   const suffix = randomUUID();
-  paths.a = `${sellerAId}/products/security-test-${suffix}-a.png`;
-  paths.b = `${sellerBId}/products/security-test-${suffix}-b.png`;
+  paths.a = null;
+  paths.b = null;
   paths.crossUpload = `${sellerBId}/products/security-test-${suffix}-cross.png`;
-  paths.invalidMime = `${sellerAId}/products/security-test-${suffix}-invalid.txt`;
-  paths.oversized = `${sellerAId}/products/security-test-${suffix}-oversized.png`;
   paths.anonymous = `${sellerAId}/products/security-test-${suffix}-anonymous.png`;
 
   await test("Anonymous visitors cannot upload marketplace images", async () => {
@@ -160,20 +175,16 @@ async function main() {
     await assertMissing(sellerA, paths.anonymous, "An anonymous upload created an object.");
   });
 
-  await test("Seller A can upload to their own products folder", async () => {
-    const { error } = await sellerA.storage.from(BUCKET).upload(paths.a, PNG_A, {
-      contentType: "image/png",
-      upsert: false,
-    });
-    if (error) throw error;
+  await test("Seller A can upload a valid PNG through the validation function", async () => {
+    const { response, payload } = await requestValidatedUpload(sellerA, "products", PNG_A, "image/png");
+    assert(response.ok && payload.path, payload.error || "Seller A's validated upload failed.");
+    paths.a = payload.path;
   });
 
-  await test("Seller B can upload to their own products folder", async () => {
-    const { error } = await sellerB.storage.from(BUCKET).upload(paths.b, PNG_B, {
-      contentType: "image/png",
-      upsert: false,
-    });
-    if (error) throw error;
+  await test("Seller B can upload a valid PNG through the validation function", async () => {
+    const { response, payload } = await requestValidatedUpload(sellerB, "products", PNG_B, "image/png");
+    assert(response.ok && payload.path, payload.error || "Seller B's validated upload failed.");
+    paths.b = payload.path;
   });
 
   await test("Seller A can update their own image", async () => {
@@ -225,24 +236,20 @@ async function main() {
     );
   });
 
-  await test("Storage rejects an unsupported MIME type", async () => {
-    const { error } = await sellerA.storage.from(BUCKET).upload(
-      paths.invalidMime,
-      Buffer.from("not an image"),
-      { contentType: "text/plain", upsert: false },
-    );
-    assert(error, "Storage accepted text/plain even though the bucket only allows JPEG, PNG and WebP.");
-    await assertMissing(sellerA, paths.invalidMime, "An object was created despite the MIME rejection.");
+  await test("Validation function rejects unsupported MIME types", async () => {
+    const { response } = await requestValidatedUpload(sellerA, "products", Buffer.from("not an image"), "text/plain");
+    assert(response.status === 415, "The upload function did not reject an unsupported MIME type.");
   });
 
-  await test("Storage rejects an image larger than 5 MiB", async () => {
+  await test("Validation function rejects a forged image MIME/signature", async () => {
+    const { response } = await requestValidatedUpload(sellerA, "products", Buffer.from("not a PNG file"), "image/png");
+    assert(response.status === 415, "The upload function accepted bytes that do not contain a PNG signature.");
+  });
+
+  await test("Validation function rejects an image larger than 5 MiB", async () => {
     const oversized = Buffer.alloc(MAX_FILE_SIZE + 1, 1);
-    const { error } = await sellerA.storage.from(BUCKET).upload(paths.oversized, oversized, {
-      contentType: "image/png",
-      upsert: false,
-    });
-    assert(error, "Storage accepted an object larger than the 5 MiB bucket limit.");
-    await assertMissing(sellerA, paths.oversized, "An oversized object was created.");
+    const { response } = await requestValidatedUpload(sellerA, "products", oversized, "image/png");
+    assert(response.status === 413, "The upload function accepted an image larger than 5 MiB.");
   });
 
   await test("Public image delivery works for a public bucket", async () => {
@@ -266,8 +273,6 @@ Setup error: ${errorMessage(error)}`);
     [sellerA, paths.a],
     [sellerB, paths.b],
     [sellerA, paths.crossUpload],
-    [sellerA, paths.invalidMime],
-    [sellerA, paths.oversized],
     [sellerA, paths.anonymous],
   ]) {
     try {
