@@ -270,8 +270,8 @@ async function HomeContent() {
           <h2>You bring the business.<br />We’ll bring the browsers.</h2>
           <p>Turn your WhatsApp hustle into a storefront people can actually discover.</p>
         </div>
-        <a className="button button-light" href="/sign-up?role=seller">
-          Get started as a seller <ArrowIcon />
+        <a className="button button-light" href={userId ? "/account" : "/sign-up"}>
+          Open your store <ArrowIcon />
         </a>
       </section>
 

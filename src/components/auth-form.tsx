@@ -84,11 +84,6 @@ export function AuthForm({ mode }: AuthFormProps) {
             <>
               <label htmlFor="full-name">Full name</label>
               <input id="full-name" autoComplete="name" required value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Your name" />
-              <label htmlFor="account-type">I want to</label>
-              <select id="account-type" value={role} onChange={(event) => setRole(event.target.value as "customer" | "seller")}>
-                <option value="customer">Discover and shop</option>
-                <option value="seller">Sell my products</option>
-              </select>
             </>
           )}
           <label htmlFor="email">Email address</label>
