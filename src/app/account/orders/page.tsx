@@ -70,7 +70,7 @@ export default async function OrdersPage() {
 
         {error ? (
           <div className="orders-empty" role="alert">
-            <h2>We couldn't load your orders.</h2>
+            <h2>We couldn&apos;t load your orders.</h2>
             <p>Please refresh the page and try again.</p>
           </div>
         ) : orders.length === 0 ? (
