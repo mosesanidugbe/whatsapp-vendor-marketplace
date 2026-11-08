@@ -63,3 +63,28 @@ The Supabase browser and server clients are in `src/lib/supabase/`. The root `sr
 Only use the publishable key in `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Never put a Supabase secret/service-role key in a `NEXT_PUBLIC_*` variable or commit private credentials. Keep `.env.local` out of Git.
 
 Before deploying, add the same two public project variables to your hosting provider's environment settings.
+
+
+## Supabase Storage security integration tests
+
+The Storage security suite tests the actual `marketplace-images` bucket and its RLS policies using two dedicated seller accounts. It creates uniquely named disposable objects under each seller's own folder and removes them with the authenticated owner session.
+
+### One-time test account setup
+
+1. In the **development** Supabase project, create two dedicated Auth users and give each the `seller` role in `public.profiles`.
+2. Create one store for each account in `public.stores` with `owner_id` set to that seller's Auth user ID. The Storage INSERT policy requires an existing seller-owned store.
+3. Do not use customer accounts, production accounts, or accounts containing important images.
+
+### Configure local test credentials
+
+Copy `.env.storage-test.example` to `.env.storage-test` and fill in the development project URL, publishable/anon key, and the two test seller credentials. This file is ignored by Git.
+
+Run:
+
+```bash
+npm run test:storage-security
+```
+
+The script refuses to run unless the Supabase URL belongs to the expected development project ref. It never uses a service-role key. Do not add test credentials to GitHub or commit the local env file.
+
+The suite checks owner uploads/updates/listing, cross-seller upload/update/delete isolation, bucket MIME and 5 MiB limits, and public image delivery. A cleanup warning is a failed run requiring manual inspection of the reported disposable path.
