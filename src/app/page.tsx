@@ -74,7 +74,7 @@ async function HomeContent() {
     supabase
       .from("products")
       .select(
-        "id, store_id, name, price, currency, image_urls, stock_quantity, stores!inner(name, is_active)",
+        "id, store_id, name, price, currency, image_urls, stock_quantity, stores!inner(name, logo_url, is_active)",
       )
       .eq("is_published", true)
       .eq("stores.is_active", true)
@@ -241,7 +241,7 @@ async function HomeContent() {
                       {!imageUrl && <span className="product-emoji">🛍️</span>}
                     </div>
                     <div className="product-info">
-                      <p className="product-vendor">{store?.name ?? "Independent seller"}</p>
+                      <p className="product-vendor">{store?.logo_url ? <img className="marketplace-store-logo" src={store.logo_url} alt="" /> : null}{store?.name ?? "Independent seller"}</p>
                       <h3>{product.name}</h3>
                       <div className="product-bottom">
                         <strong>

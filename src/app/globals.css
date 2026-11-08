@@ -512,3 +512,46 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .account-mobile-signout:hover { background: #f3f4ed; }
   .account-mobile-signout { width: 100%; color: #9d5146; }
 }
+
+
+/* Seller product and store management */
+.seller-dashboard { display:grid; gap:20px; }
+.seller-panel { padding:24px; border:1px solid var(--line); border-radius:12px; background:#fffefa; }
+.seller-panel-heading { display:flex; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.seller-panel-heading .eyebrow { margin-bottom:8px; }
+.seller-panel-heading h2 { margin:0; font-size:21px; letter-spacing:-.04em; }
+.seller-panel-heading p:not(.eyebrow) { margin:7px 0 0; color:var(--muted); font-size:11px; }
+.seller-form { display:grid; gap:15px; max-width:720px; }
+.seller-form label { display:grid; gap:7px; color:#4f5749; font-size:11px; font-weight:750; }
+.seller-form input:not([type=file]):not([type=checkbox]),.seller-form textarea,.seller-form select { width:100%; min-height:43px; padding:10px 12px; border:1px solid #e5e6dd; border-radius:6px; outline:none; background:white; color:var(--ink); font-size:12px; }
+.seller-form textarea { resize:vertical; }
+.seller-form input:focus,.seller-form textarea:focus,.seller-form select:focus { border-color:#9dbb50; box-shadow:0 0 0 3px #d8f36a33; }
+.seller-form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.seller-file-label span { color:#92978c; font-weight:450; }
+.seller-file-label input[type=file] { width:100%; padding:10px; border:1px dashed #d9ddcf; border-radius:6px; background:#fafbf6; font-size:11px; }
+.seller-logo-preview { width:76px; height:76px; border:1px solid var(--line); border-radius:12px; object-fit:cover; }
+.seller-product-preview { width:112px; height:112px; border-radius:8px; object-fit:cover; }
+.seller-publish-toggle { display:flex!important; grid-template-columns:auto 1fr; align-items:center; gap:9px!important; }
+.seller-publish-toggle input { accent-color:#809c3c; }
+.seller-form-actions { display:flex; gap:10px; }
+.seller-cancel { border:1px solid var(--line); background:white; color:var(--ink); }
+.seller-product-list { display:grid; }
+.seller-product-row { display:flex; align-items:center; gap:14px; padding:13px 0; border-top:1px solid #efefe8; }
+.seller-product-thumb { width:58px; height:58px; flex:0 0 58px; display:grid; place-items:center; overflow:hidden; border-radius:8px; background:#f1f0e8; }
+.seller-product-thumb img { width:100%; height:100%; object-fit:cover; }
+.seller-product-thumb span { font-size:25px; }
+.seller-product-summary { flex:1; min-width:0; display:grid; gap:5px; }
+.seller-product-summary strong { font-size:12px; overflow-wrap:anywhere; }
+.seller-product-summary span { color:var(--muted); font-size:10px; }
+.seller-product-actions { display:flex; gap:12px; }
+.seller-product-actions button { padding:7px 9px; border:0; border-radius:5px; background:#edf2df; color:#596f2d; font-size:10px; font-weight:750; cursor:pointer; }
+.seller-product-actions .seller-delete { background:#f8ece9; color:#9d5146; }
+.seller-product-actions button:disabled { opacity:.5; }
+.seller-count { display:inline-grid; min-width:25px; height:25px; place-items:center; margin-left:5px; border-radius:30px; background:#edf2df; color:#657d31; font-size:11px; vertical-align:middle; }
+.seller-empty { padding:20px; border-radius:7px; background:#f8f8f2; color:var(--muted); font-size:11px; }
+.seller-feedback,.seller-error { margin:0; padding:12px 14px; border-radius:7px; font-size:11px; }
+.seller-feedback { background:#edf4df; color:#526b29; }
+.seller-error { background:#f9eae7; color:#984c42; }
+@media(max-width:620px) { .seller-panel { padding:17px; } .seller-form-row { grid-template-columns:1fr; } .seller-product-row { gap:9px; } .seller-product-thumb { width:48px; height:48px; flex-basis:48px; } .seller-product-actions { gap:4px; flex-direction:column; } .seller-product-actions button { padding:6px 8px; } }
+
+.marketplace-store-logo { width:22px; height:22px; margin-right:7px; border-radius:50%; object-fit:cover; vertical-align:middle; }
