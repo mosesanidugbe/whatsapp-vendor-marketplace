@@ -88,7 +88,7 @@ const sellerB = makeClient();
 const anonymous = makeClient();
 
 const results = [];
-const paths = { a: null, b: null, crossUpload: null, anonymous: null };
+const paths = { a: null, b: null, crossUpload: null, anonymous: null, direct: null };
 
 async function test(name, fn) {
   try {
@@ -165,6 +165,7 @@ async function main() {
   paths.b = null;
   paths.crossUpload = `${sellerBId}/products/security-test-${suffix}-cross.png`;
   paths.anonymous = `${sellerAId}/products/security-test-${suffix}-anonymous.png`;
+  paths.direct = `${sellerAId}/products/security-test-${suffix}-direct.png`;
 
   await test("Anonymous visitors cannot upload marketplace images", async () => {
     const { error } = await anonymous.storage.from(BUCKET).upload(paths.anonymous, PNG_A, {
@@ -173,6 +174,15 @@ async function main() {
     });
     assert(error, "Anonymous upload unexpectedly succeeded.");
     await assertMissing(sellerA, paths.anonymous, "An anonymous upload created an object.");
+  });
+
+  await test("Authenticated sellers cannot bypass validation with direct Storage uploads", async () => {
+    const { error } = await sellerA.storage.from(BUCKET).upload(paths.direct, PNG_A, {
+      contentType: "image/png",
+      upsert: false,
+    });
+    assert(error, "A direct Storage upload bypassed the validation function.");
+    await assertMissing(sellerA, paths.direct, "A direct Storage upload created an object.");
   });
 
   await test("Seller A can upload a valid PNG through the validation function", async () => {
@@ -274,6 +284,7 @@ Setup error: ${errorMessage(error)}`);
     [sellerB, paths.b],
     [sellerA, paths.crossUpload],
     [sellerA, paths.anonymous],
+    [sellerA, paths.direct],
   ]) {
     try {
       await removeOwn(client, path);
