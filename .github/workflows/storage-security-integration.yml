@@ -1,6 +1,7 @@
 name: Storage security integration
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - test/storage-security-integration
