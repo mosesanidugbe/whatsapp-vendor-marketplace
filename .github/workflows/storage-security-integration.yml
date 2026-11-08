@@ -19,7 +19,7 @@ jobs:
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || secrets.SUPABASE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
           SELLER_A_EMAIL: ${{ secrets.STORAGE_TEST_SELLER_A_EMAIL }}
           SELLER_A_PASSWORD: ${{ secrets.STORAGE_TEST_SELLER_A_PASSWORD }}
           SELLER_B_EMAIL: ${{ secrets.STORAGE_TEST_SELLER_B_EMAIL }}
