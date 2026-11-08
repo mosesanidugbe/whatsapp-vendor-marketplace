@@ -1,12 +1,48 @@
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
+import { deflateSync } from "node:zlib";
 
 const BUCKET = "marketplace-images";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const PROJECT_REF = "otipprrbdlnwfyltshuu";
-const PNG_A = Buffer.from("seller-a-test-image-v1");
-const PNG_A_UPDATED = Buffer.from("seller-a-test-image-v2");
-const PNG_B = Buffer.from("seller-b-test-image-original");
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type, data) {
+  const name = Buffer.from(type);
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(data.length);
+  const checksum = Buffer.alloc(4);
+  checksum.writeUInt32BE(crc32(Buffer.concat([name, data])));
+  return Buffer.concat([length, name, data, checksum]);
+}
+
+function makePng(red, green, blue) {
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(1, 0);
+  header.writeUInt32BE(1, 4);
+  header[8] = 8;
+  header[9] = 2;
+  const pixels = deflateSync(Buffer.from([0, red, green, blue]));
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    pngChunk("IHDR", header),
+    pngChunk("IDAT", pixels),
+    pngChunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+const PNG_A = makePng(20, 80, 160);
+const PNG_A_UPDATED = makePng(160, 80, 20);
+const PNG_B = makePng(40, 120, 200);
 
 function required(name) {
   const value = process.env[name];
@@ -52,7 +88,7 @@ const sellerB = makeClient();
 const anonymous = makeClient();
 
 const results = [];
-const paths = { a: null, b: null, crossUpload: null, invalidMime: null, oversized: null };
+const paths = { a: null, b: null, crossUpload: null, invalidMime: null, oversized: null, anonymous: null };
 
 async function test(name, fn) {
   try {
@@ -113,6 +149,16 @@ async function main() {
   paths.crossUpload = `${sellerBId}/products/security-test-${suffix}-cross.png`;
   paths.invalidMime = `${sellerAId}/products/security-test-${suffix}-invalid.txt`;
   paths.oversized = `${sellerAId}/products/security-test-${suffix}-oversized.png`;
+  paths.anonymous = `${sellerAId}/products/security-test-${suffix}-anonymous.png`;
+
+  await test("Anonymous visitors cannot upload marketplace images", async () => {
+    const { error } = await anonymous.storage.from(BUCKET).upload(paths.anonymous, PNG_A, {
+      contentType: "image/png",
+      upsert: false,
+    });
+    assert(error, "Anonymous upload unexpectedly succeeded.");
+    await assertMissing(sellerA, paths.anonymous, "An anonymous upload created an object.");
+  });
 
   await test("Seller A can upload to their own products folder", async () => {
     const { error } = await sellerA.storage.from(BUCKET).upload(paths.a, PNG_A, {
@@ -222,6 +268,7 @@ Setup error: ${errorMessage(error)}`);
     [sellerA, paths.crossUpload],
     [sellerA, paths.invalidMime],
     [sellerA, paths.oversized],
+    [sellerA, paths.anonymous],
   ]) {
     try {
       await removeOwn(client, path);
