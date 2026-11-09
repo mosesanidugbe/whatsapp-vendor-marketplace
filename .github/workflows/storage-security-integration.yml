@@ -48,6 +48,13 @@ jobs:
         if: steps.credentials.outputs.ready == 'true'
         run: npm ci
 
+      - name: Build app for authenticated page tests
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_ANON_KEY || secrets.SUPABASE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+        run: npm run build
+
       - name: Run Storage security integration tests
         if: steps.credentials.outputs.ready == 'true'
         shell: bash
@@ -68,3 +75,14 @@ jobs:
             printf 'STORAGE_TEST_SELLER_B_PASSWORD=%s\n' "$STORAGE_TEST_SELLER_B_PASSWORD"
           } > .env.storage-test
           npm run test:storage-security
+
+      - name: Run unified marketplace account integration tests
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || secrets.SUPABASE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          STORAGE_TEST_SELLER_A_EMAIL: ${{ secrets.STORAGE_TEST_SELLER_A_EMAIL }}
+          STORAGE_TEST_SELLER_A_PASSWORD: ${{ secrets.STORAGE_TEST_SELLER_A_PASSWORD }}
+          STORAGE_TEST_SELLER_B_EMAIL: ${{ secrets.STORAGE_TEST_SELLER_B_EMAIL }}
+          STORAGE_TEST_SELLER_B_PASSWORD: ${{ secrets.STORAGE_TEST_SELLER_B_PASSWORD }}
+        run: npm run test:marketplace-accounts
