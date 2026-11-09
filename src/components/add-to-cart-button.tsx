@@ -25,11 +25,11 @@ export function AddToCartButton({
 
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
       if (!user) {
         router.push("/sign-in");
         return;
       }
+      if (authError) throw authError;
 
       const { data: initialCart, error: cartError } = await supabase
         .from("carts")
