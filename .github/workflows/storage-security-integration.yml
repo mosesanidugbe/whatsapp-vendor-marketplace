@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - test/storage-security-integration
+      - feat/unified-marketplace-accounts
 
 permissions:
   contents: read
