@@ -9,7 +9,6 @@ begin
 end;
 $$;
 
-alter table public.profiles drop column if exists role;
 
 drop policy if exists "Sellers can create one store for themselves" on public.stores;
 drop policy if exists "Sellers can update their own store" on public.stores;
@@ -170,3 +169,6 @@ for delete to authenticated using (
  and (storage.foldername(name))[2] in ('products', 'store')
  and exists (select 1 from public.stores s where s.owner_id = (select auth.uid()))
 );
+
+-- Remove the legacy role only after every policy depending on it has been replaced.
+alter table public.profiles drop column if exists role;
