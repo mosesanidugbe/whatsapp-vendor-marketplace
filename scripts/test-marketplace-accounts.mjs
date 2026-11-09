@@ -161,6 +161,8 @@ async function main() {
   }
   assert(stores[0].id !== stores[1].id, "The accounts must own different stores.");
 
+  await startApp();
+
   for (const account of state.users) {
     await test(account.label + " can open the signed-in account page", async () => {
       await assertAuthenticatedPage(account, "/account", "Your shopping carts");
@@ -303,8 +305,6 @@ async function main() {
       }
     });
   }
-
-  await startApp();
 }
 
 async function cleanup() {
