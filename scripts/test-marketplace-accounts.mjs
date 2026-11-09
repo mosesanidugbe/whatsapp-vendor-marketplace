@@ -310,11 +310,10 @@ async function main() {
 async function cleanup() {
   for (const item of state.cartItems.reverse()) {
     try {
-      if (item.created) {
-        await item.account.supabase.from("cart_items").delete().eq("id", item.id);
-      } else {
-        await item.account.supabase.from("cart_items").update({ quantity: item.quantity }).eq("id", item.id);
-      }
+      const result = item.created
+        ? await item.account.supabase.from("cart_items").delete().eq("id", item.id)
+        : await item.account.supabase.from("cart_items").update({ quantity: item.quantity }).eq("id", item.id);
+      if (result.error) throw result.error;
     } catch (error) {
       console.error("Cleanup warning for cart item " + item.id + ": " + message(error));
       process.exitCode = 1;
