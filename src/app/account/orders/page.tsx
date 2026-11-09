@@ -65,12 +65,12 @@ export default async function OrdersPage() {
         <section className="orders-welcome">
           <p className="eyebrow">YOUR MARKETDAY ACCOUNT</p>
           <h1>Your orders.</h1>
-          <p>Keep track of the orders you've started with marketplace vendors.</p>
+          <p>Keep track of the orders you&apos;ve started with marketplace vendors.</p>
         </section>
 
         {error ? (
           <div className="orders-empty" role="alert">
-            <h2>We couldn't load your orders.</h2>
+            <h2>We couldn&apos;t load your orders.</h2>
             <p>Please refresh the page and try again.</p>
           </div>
         ) : orders.length === 0 ? (

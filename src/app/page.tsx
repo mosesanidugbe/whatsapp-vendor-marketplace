@@ -74,7 +74,7 @@ async function HomeContent() {
     supabase
       .from("products")
       .select(
-        "id, store_id, name, price, currency, image_urls, stock_quantity, stores!inner(name, logo_url, is_active)",
+        "id, store_id, name, price, currency, image_urls, stock_quantity, stores!inner(name, logo_url, is_active, owner_id)",
       )
       .eq("is_published", true)
       .eq("stores.is_active", true)
@@ -83,10 +83,6 @@ async function HomeContent() {
   ]);
 
   const userId = claimsData?.claims?.sub;
-  const { data: profile } = userId
-    ? await supabase.from("profiles").select("role").eq("id", userId).maybeSingle()
-    : { data: null };
-  const isSeller = profile?.role === "seller";
 
   const categories = categoryRows ?? [];
   const products = productRows ?? [];
@@ -115,14 +111,14 @@ async function HomeContent() {
           {userId ? (
             <>
               <a className="sign-in" href="/account">
-                {isSeller ? "Seller account" : "My account"}
+                My account
               </a>
               <SignOutButton className="button button-dark button-small" />
             </>
           ) : (
             <>
               <a className="sign-in" href="/sign-in">Sign in</a>
-              <a className="button button-dark button-small" href="/sign-up?role=seller">Open your store <ArrowIcon /></a>
+              <a className="button button-dark button-small" href="/sign-up">Create an account <ArrowIcon /></a>
             </>
           )}
         </div>
@@ -247,7 +243,7 @@ async function HomeContent() {
                         <strong>
                           {formatPrice(Number(product.price), product.currency)}
                         </strong>
-                        <AddToCartButton productId={product.id} storeId={product.store_id} />
+                        <AddToCartButton productId={product.id} storeId={product.store_id} isOwnStore={Boolean(userId && store?.owner_id === userId)} />
                       </div>
                     </div>
                   </article>
@@ -259,7 +255,7 @@ async function HomeContent() {
               <span aria-hidden="true">✳</span>
               <h3>The shelves are getting ready.</h3>
               <p>
-                There aren’t any published products just yet. Check back soon
+                There aren&apos;t any published products just yet. Check back soon
                 as our independent sellers set up their stores.
               </p>
             </div>
@@ -274,8 +270,8 @@ async function HomeContent() {
           <h2>You bring the business.<br />We’ll bring the browsers.</h2>
           <p>Turn your WhatsApp hustle into a storefront people can actually discover.</p>
         </div>
-        <a className="button button-light" href="/sign-up?role=seller">
-          Get started as a seller <ArrowIcon />
+        <a className="button button-light" href={userId ? "/account" : "/sign-up"}>
+          Open your store <ArrowIcon />
         </a>
       </section>
 

@@ -7,28 +7,31 @@ import { createClient } from "@/lib/supabase/client";
 export function AddToCartButton({
   productId,
   storeId,
+  isOwnStore = false,
 }: {
   productId: string;
   storeId: string;
+  isOwnStore?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
 
   async function addToCart() {
+    if (isOwnStore) return;
     setBusy(true);
     setMessage("");
     const supabase = createClient();
 
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
       if (!user) {
         router.push("/sign-in");
         return;
       }
+      if (authError) throw authError;
 
-      let { data: cart, error: cartError } = await supabase
+      const { data: initialCart, error: cartError } = await supabase
         .from("carts")
         .select("id")
         .eq("customer_id", user.id)
@@ -37,6 +40,7 @@ export function AddToCartButton({
         .maybeSingle();
 
       if (cartError) throw cartError;
+      let cart = initialCart;
 
       if (!cart) {
         const created = await supabase
@@ -99,9 +103,10 @@ export function AddToCartButton({
 
   return (
     <div className="add-to-cart-control">
-      <button className="add-to-cart-button" type="button" onClick={addToCart} disabled={busy}>
-        {busy ? "Adding…" : "Add to cart"}
+      <button className="add-to-cart-button" type="button" onClick={addToCart} disabled={busy || isOwnStore} aria-describedby={isOwnStore ? `own-store-${productId}` : undefined}>
+        {isOwnStore ? "Your store" : busy ? "Adding…" : "Add to cart"}
       </button>
+      {isOwnStore && <span className="cart-action-message" id={`own-store-${productId}`} role="note">You can’t purchase products from your own store.</span>}
       {message && <span className="cart-action-message" role="status">{message}</span>}
     </div>
   );

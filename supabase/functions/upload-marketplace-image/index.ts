@@ -71,10 +71,6 @@ Deno.serve(async (req: Request) => {
     const { data: authData, error: authError } = await userClient.auth.getUser(token);
     if (authError || !authData.user) return respond({ error: "Your session is invalid. Sign in again." }, 401);
 
-    const { data: profile, error: profileError } = await userClient
-      .from("profiles").select("role").eq("id", authData.user.id).single();
-    if (profileError || profile?.role !== "seller") return respond({ error: "Only sellers can upload marketplace images." }, 403);
-
     const { data: store, error: storeError } = await userClient
       .from("stores").select("id").eq("owner_id", authData.user.id).limit(1).maybeSingle();
     if (storeError || !store) return respond({ error: "Create your store before uploading images." }, 403);

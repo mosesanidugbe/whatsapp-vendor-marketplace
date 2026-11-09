@@ -152,9 +152,9 @@ async function main() {
   assert(sellerAId !== sellerBId, "Seller A and Seller B must be two different accounts.");
 
   for (const [label, client, userId] of [["Seller A", sellerA, sellerAId], ["Seller B", sellerB, sellerBId]]) {
-    const { data: profile, error: profileError } = await client.from("profiles").select("role").eq("id", userId).single();
+    const { data: profile, error: profileError } = await client.from("profiles").select("id").eq("id", userId).single();
     if (profileError) throw new Error(`${label} profile check failed: ${errorMessage(profileError)}`);
-    assert(profile?.role === "seller", `${label} account must have the seller role.`);
+    assert(profile?.id === userId, `${label} must have a marketplace profile.`);
     const { data: store, error: storeError } = await client.from("stores").select("id").eq("owner_id", userId).limit(1).maybeSingle();
     if (storeError) throw new Error(`${label} store check failed: ${errorMessage(storeError)}`);
     assert(store, `${label} must have an existing store before Storage tests can run.`);
